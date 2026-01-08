@@ -16,7 +16,7 @@ sys.path.append(current_dir)
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
-from test_main import deep_researcher as graph
+from main import deep_researcher as graph
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
 app = FastAPI()

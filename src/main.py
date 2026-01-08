@@ -16,10 +16,10 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command
 
-from test_config import (
+from config import (
     Configuration,
 )
-from test_prompts import (
+from prompts import (
     clarify_with_user_instructions,
     compress_research_simple_human_message,
     compress_research_system_prompt,
@@ -28,7 +28,7 @@ from test_prompts import (
     research_system_prompt,
     transform_messages_into_research_topic_prompt,
 )
-from test_state import (
+from state import (
     AgentInputState,
     AgentState,
     ClarifyWithUser,
@@ -39,7 +39,7 @@ from test_state import (
     ResearchQuestion,
     SupervisorState,
 )
-from test_utils import (
+from utils import (
     gemini_websearch_called,
     get_all_tools,
     get_api_key_for_model,
