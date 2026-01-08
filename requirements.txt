@@ -1,0 +1,13 @@
+langchain
+langchain-core
+langgraph
+langchain-openai
+langchain-google-genai
+pydantic
+aiohttp
+langchain-mcp-adapters
+mcp
+tavily-python
+fastapi
+uvicorn
+python-dotenv
