@@ -199,12 +199,14 @@ async def summarize_webpage(model: BaseChatModel, webpage_content: str) -> str:
             timeout=60.0  # 60 second timeout for summarization
         )
         
-        # Format the summary with structured sections
+        # Format the summary with structured sections including publication date
+        publication_date = getattr(summary, 'publication_date', 'Unknown') or 'Unknown'
         formatted_summary = (
+            f"<publication_date>{publication_date}</publication_date>\n\n"
             f"<summary>\n{summary.summary}\n</summary>\n\n"
             f"<key_excerpts>\n{summary.key_excerpts}\n</key_excerpts>"
         )
-        
+
         return formatted_summary
         
     except asyncio.TimeoutError:

@@ -219,6 +219,19 @@ You have access to two main tools:
 **CRITICAL: Use think_tool after each search to reflect on results and plan next steps. Do not call think_tool with the tavily_search or any other tools. It should be to reflect on the results of the search.**
 </Available Tools>
 
+<Temporal Search Strategy>
+**CRITICAL: Prioritize recent information (last 6 months) in your searches.**
+1. **Add year/quarter to search queries** - Include "2025", "Q3 2025", "latest", "recent" in queries
+2. **Prefer news over general results** - Use topic="news" for current events
+3. **Check publication dates** - When reviewing results, note if content is from the last 6 months
+4. **Discard outdated sources** - If a source is older than 6 months and not about ongoing situations, deprioritize it
+5. **Search for recent events first** - Earnings calls, press releases, leadership changes from the current year
+
+Examples of temporal search queries:
+- GOOD: "Company X earnings Q3 2025", "Company X CEO interview 2025", "Company X layoffs recent"
+- BAD: "Company X history", "Company X founded", "Company X overview"
+</Temporal Search Strategy>
+
 <Instructions>
 Think like a human researcher with limited time. Follow these steps:
 
@@ -261,6 +274,19 @@ For example, if three sources all say "X", you could say "These three sources al
 Only these fully comprehensive cleaned findings are going to be returned to the user, so it's crucial that you don't lose any information from the raw messages.
 </Task>
 
+<Temporal Date Preservation - CRITICAL>
+**You MUST extract and preserve publication dates for every source.**
+1. **Extract dates from each source** - Look for publication dates, article dates, report dates, or event dates
+2. **Tag each fact with its date** - Format: "[Date: Mon YYYY]" or "[Date: Q# YYYY]" after each fact
+3. **Preserve temporal context** - If a source says "last quarter" or "recently", calculate the actual date based on today's date ({date})
+4. **Flag undated sources** - If no date can be determined, mark as "[Date: Unknown]"
+
+Example of proper date tagging:
+- "Revenue increased 15% YoY [Date: Q3 2025] [Source: 1]"
+- "CEO announced new AI strategy [Date: Oct 2025] [Source: 2]"
+- "Company was founded in 2010 [Date: Historical] [Source: 3]"
+</Temporal Date Preservation - CRITICAL>
+
 <Guidelines>
 1. Your output findings should be fully comprehensive and include ALL of the information and sources that the researcher has gathered from tool calls and web searches. It is expected that you repeat key information verbatim.
 2. This report can be as long as necessary to return ALL of the information that the researcher has gathered.
@@ -268,6 +294,7 @@ Only these fully comprehensive cleaned findings are going to be returned to the 
 4. You should include a "Sources" section at the end of the report that lists all of the sources the researcher found with corresponding citations, cited against statements in the report.
 5. Make sure to include ALL of the sources that the researcher gathered in the report, and how they were used to answer the question!
 6. It's really important not to lose any sources. A later LLM will be used to merge this report with others, so having all of the sources is critical.
+7. **CRITICAL: Include the publication/event date for each source in the Sources section.**
 </Guidelines>
 
 <Output Format>
@@ -321,6 +348,21 @@ When analyzing challenges, opportunities, and initiatives, prioritize informatio
 3) Last 5-6 months (MEDIUM PRIORITY)
 ACTIVELY FILTER OUT information older than 6 months unless it directly explains a current, ongoing situation that started within the last 6 months.
 Look for temporal markers like 'recently', 'currently', 'latest', 'new', 'just announced', 'upcoming', 'within the last 6 months', 'in the past 6 months' to identify the freshest data. Deprioritize or exclude older information.
+
+TEMPORAL TAGGING REQUIREMENT:
+**You MUST include a date tag for key facts in the report.**
+- Format: Add "[Q# YYYY]" or "[Mon YYYY]" after significant facts, metrics, or events
+- This helps readers quickly identify the recency of information
+- Example: "Revenue grew 15% YoY [Q3 2025]" or "CEO announced expansion [Oct 2025]"
+- For historical context that's still relevant, use "[Historical]" tag
+- If a fact's date is uncertain, use "[Date: Approx Q# YYYY]" or omit the tag
+
+TEMPORAL VALIDATION:
+Before including any fact in the final report, verify:
+1. Does this information have a date tag from the research findings?
+2. Is this date within the last 6 months from today ({date})?
+3. If older than 6 months, is it essential context for understanding current situations?
+4. If no date is available and recency cannot be verified, add a caveat: "(date unverified)"
 
 BRIEF SPECIFICATIONS:
 • Goal: Enable **{seller_entity}** to effectively position their solutions for **{buyer_entity}**
@@ -451,12 +493,21 @@ When handling different types of content:
 
 Your summary should be significantly shorter than the original content but comprehensive enough to stand alone as a source of information. Aim for about 25-30 percent of the original length, unless the content is already concise.
 
+**CRITICAL: Extract and include the publication date of this content.**
+Look for:
+- Explicit publication dates (e.g., "Published: January 15, 2025")
+- Article timestamps or bylines
+- Report dates or filing dates
+- Event dates mentioned in the content
+- If no explicit date, estimate based on temporal references (e.g., "last month" relative to today's date)
+
 Present your summary in the following format:
 
 ```
 {{
    "summary": "Your summary here, structured with appropriate paragraphs or bullet points as needed",
-   "key_excerpts": "First important quote or excerpt, Second important quote or excerpt, Third important quote or excerpt, ...Add more excerpts as needed, up to a maximum of 5"
+   "key_excerpts": "First important quote or excerpt, Second important quote or excerpt, Third important quote or excerpt, ...Add more excerpts as needed, up to a maximum of 5",
+   "publication_date": "The publication or event date in format 'Mon DD, YYYY' or 'Q# YYYY'. Use 'Unknown' if no date can be determined."
 }}
 ```
 
@@ -466,7 +517,8 @@ Example 1 (for a news article):
 ```json
 {{
    "summary": "On July 15, 2023, NASA successfully launched the Artemis II mission from Kennedy Space Center. This marks the first crewed mission to the Moon since Apollo 17 in 1972. The four-person crew, led by Commander Jane Smith, will orbit the Moon for 10 days before returning to Earth. This mission is a crucial step in NASA's plans to establish a permanent human presence on the Moon by 2030.",
-   "key_excerpts": "Artemis II represents a new era in space exploration, said NASA Administrator John Doe. The mission will test critical systems for future long-duration stays on the Moon, explained Lead Engineer Sarah Johnson. We're not just going back to the Moon, we're going forward to the Moon, Commander Jane Smith stated during the pre-launch press conference."
+   "key_excerpts": "Artemis II represents a new era in space exploration, said NASA Administrator John Doe. The mission will test critical systems for future long-duration stays on the Moon, explained Lead Engineer Sarah Johnson. We're not just going back to the Moon, we're going forward to the Moon, Commander Jane Smith stated during the pre-launch press conference.",
+   "publication_date": "Jul 15, 2023"
 }}
 ```
 
@@ -474,7 +526,8 @@ Example 2 (for a scientific article):
 ```json
 {{
    "summary": "A new study published in Nature Climate Change reveals that global sea levels are rising faster than previously thought. Researchers analyzed satellite data from 1993 to 2022 and found that the rate of sea-level rise has accelerated by 0.08 mm/year² over the past three decades. This acceleration is primarily attributed to melting ice sheets in Greenland and Antarctica. The study projects that if current trends continue, global sea levels could rise by up to 2 meters by 2100, posing significant risks to coastal communities worldwide.",
-   "key_excerpts": "Our findings indicate a clear acceleration in sea-level rise, which has significant implications for coastal planning and adaptation strategies, lead author Dr. Emily Brown stated. The rate of ice sheet melt in Greenland and Antarctica has tripled since the 1990s, the study reports. Without immediate and substantial reductions in greenhouse gas emissions, we are looking at potentially catastrophic sea-level rise by the end of this century, warned co-author Professor Michael Green."  
+   "key_excerpts": "Our findings indicate a clear acceleration in sea-level rise, which has significant implications for coastal planning and adaptation strategies, lead author Dr. Emily Brown stated. The rate of ice sheet melt in Greenland and Antarctica has tripled since the 1990s, the study reports. Without immediate and substantial reductions in greenhouse gas emissions, we are looking at potentially catastrophic sea-level rise by the end of this century, warned co-author Professor Michael Green.",
+   "publication_date": "Q4 2022"
 }}
 ```
 
